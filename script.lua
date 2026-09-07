@@ -1,9 +1,10 @@
--- [[ BLOX FRUITS - ULTRA HUB v8 (AUTO FARM COM FLY LENTO INTEGRADO) ]] --
+-- [[ BLOX FRUITS - ULTRA HUB v9 (COM AUTO QUEST REAL + FLY LENTO) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 if LocalPlayer.PlayerGui:FindFirstChild("UltraBloxFruitsHub") then
     LocalPlayer.PlayerGui.UltraBloxFruitsHub:Destroy()
@@ -41,7 +42,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(1, -15, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits - Auto Farm + Fly Lento"
+Title.Text = "⚡ Blox Fruits - Auto Farm + Quest Real"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -74,7 +75,7 @@ local function makeBtn(txt, isDestructive)
     return b
 end
 
-local FarmBtn = makeBtn("Auto Farm (Com Fly Lento)")
+local FarmBtn = makeBtn("Auto Farm (Quest + Fly)")
 local AttackBtn = makeBtn("Auto Attack (Click)")
 local EspBtn = makeBtn("ESP Frutas (Nome + Distância)")
 local ExitBtn = makeBtn("❌ Finalizar / Fechar Script", true)
@@ -92,7 +93,7 @@ local function clearEsp()
     espDrawings = {}
 end
 
--- Auto Attack contínuo
+-- Auto Attack contínuo via VirtualInputManager
 RunService.Stepped:Connect(function()
     if _Attack then
         pcall(function()
@@ -103,10 +104,25 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Auto Farm com Fly Lento Corrigido (Posicionamento exato acima do mob)
+-- Função para checar se tem quest ativa
+local function checkQuest()
+    local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+    if playerGui then
+        local main = playerGui:FindFirstChild("Main")
+        if main then
+            local quest = main:FindFirstChild("Quest")
+            if quest and quest.Visible then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- Auto Farm com Fly Lento e Sistema de Missão Integrado
 task.spawn(function()
     while true do
-        task.wait(0.25)
+        task.wait(0.3)
         if _Farm then
             pcall(function()
                 local char = LocalPlayer.Character
@@ -116,6 +132,24 @@ task.spawn(function()
                 
                 if humanoid.Health <= 0 then return end
 
+                -- Se não tiver missão ativa, tenta disparar o Remote de Quests do jogo baseado no level
+                if not checkQuest() then
+                    local level = LocalPlayer.Data.Level.Value
+                    local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
+                    if Remotes and Remotes:FindFirstChild("CommF_") then
+                        -- Dispara pedido de missão genérico ou localizador de NPCs de quest padrão do Blox Fruits
+                        if level <= 10 then
+                            Remotes.CommF_:InvokeServer("StartQuest", "BanditQuest1", 1)
+                        elseif level <= 15 then
+                            Remotes.CommF_:InvokeServer("StartQuest", "JungleQuest", 1)
+                        else
+                            -- Caso genérico para evitar travamento caso o nível seja intermediário
+                            Remotes.CommF_:InvokeServer("CFrame", CFrame.new(0, 10, 0))
+                        end
+                    end
+                end
+
+                -- Varre os inimigos na pasta Enemies para achar o alvo mais próximo
                 local targetMob = nil
                 local enemiesFolder = Workspace:FindFirstChild("Enemies")
                 if enemiesFolder then
@@ -133,11 +167,11 @@ task.spawn(function()
                     end
                 end
 
+                -- Se achou o mob, ativa o Fly Lento mantendo o player flutuando por cima (evita ficar enterrado)
                 if targetMob then
                     humanoid.PlatformStand = true
-                    -- Trava o personagem flutuando exatamente a 5 studs acima do monstro (sem colar dentro dele)
-                    local safePosition = targetMob.CFrame + Vector3.new(0, 5, 0)
-                    root.CFrame = root.CFrame:Lerp(safePosition, 0.3)
+                    local abovePosition = targetMob.CFrame * CFrame.new(0, 8, 2)
+                    root.CFrame = root.CFrame:Lerp(abovePosition, 0.3)
                     root.Velocity = Vector3.new(0, 0, 0)
                 else
                     humanoid.PlatformStand = false
@@ -200,7 +234,7 @@ end)
 -- Botões Click Events
 FarmBtn.MouseButton1Click:Connect(function()
     _Farm = not _Farm
-    FarmBtn.Text = "Auto Farm (Com Fly Lento): " .. (_Farm and "ON" or "OFF")
+    FarmBtn.Text = "Auto Farm (Quest + Fly): " .. (_Farm and "ON" or "OFF")
     FarmBtn.TextColor3 = _Farm and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
