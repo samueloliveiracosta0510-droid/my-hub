@@ -1,4 +1,4 @@
--- [[ BLOX FRUITS - ULTRA HUB v9 (COM AUTO QUEST REAL + FLY LENTO) ]] --
+-- [[ BLOX FRUITS - ULTRA HUB v10 (PRO AUTO FARM + QUEST & FLY) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -42,7 +42,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(1, -15, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits - Auto Farm + Quest Real"
+Title.Text = "⚡ Blox Fruits Hub - Real Auto Farm"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -75,7 +75,7 @@ local function makeBtn(txt, isDestructive)
     return b
 end
 
-local FarmBtn = makeBtn("Auto Farm (Quest + Fly)")
+local FarmBtn = makeBtn("Auto Farm (Real Quest + Fly)")
 local AttackBtn = makeBtn("Auto Attack (Click)")
 local EspBtn = makeBtn("ESP Frutas (Nome + Distância)")
 local ExitBtn = makeBtn("❌ Finalizar / Fechar Script", true)
@@ -83,7 +83,6 @@ local ExitBtn = makeBtn("❌ Finalizar / Fechar Script", true)
 local _Farm = false
 local _Attack = false
 local _EspFruit = false
-
 local espDrawings = {}
 
 local function clearEsp()
@@ -93,7 +92,7 @@ local function clearEsp()
     espDrawings = {}
 end
 
--- Auto Attack contínuo via VirtualInputManager
+-- Auto Attack
 RunService.Stepped:Connect(function()
     if _Attack then
         pcall(function()
@@ -104,25 +103,10 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Função para checar se tem quest ativa
-local function checkQuest()
-    local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
-    if playerGui then
-        local main = playerGui:FindFirstChild("Main")
-        if main then
-            local quest = main:FindFirstChild("Quest")
-            if quest and quest.Visible then
-                return true
-            end
-        end
-    end
-    return false
-end
-
--- Auto Farm com Fly Lento e Sistema de Missão Integrado
+-- Sistema de Quests e Auto Farm Real com Fly Lento Embutido
 task.spawn(function()
     while true do
-        task.wait(0.3)
+        task.wait(0.2)
         if _Farm then
             pcall(function()
                 local char = LocalPlayer.Character
@@ -132,24 +116,39 @@ task.spawn(function()
                 
                 if humanoid.Health <= 0 then return end
 
-                -- Se não tiver missão ativa, tenta disparar o Remote de Quests do jogo baseado no level
-                if not checkQuest() then
-                    local level = LocalPlayer.Data.Level.Value
-                    local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
-                    if Remotes and Remotes:FindFirstChild("CommF_") then
-                        -- Dispara pedido de missão genérico ou localizador de NPCs de quest padrão do Blox Fruits
-                        if level <= 10 then
-                            Remotes.CommF_:InvokeServer("StartQuest", "BanditQuest1", 1)
-                        elseif level <= 15 then
-                            Remotes.CommF_:InvokeServer("StartQuest", "JungleQuest", 1)
-                        else
-                            -- Caso genérico para evitar travamento caso o nível seja intermediário
-                            Remotes.CommF_:InvokeServer("CFrame", CFrame.new(0, 10, 0))
-                        end
+                -- Verifica se a quest está ativa no PlayerGui
+                local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+                local hasQuest = false
+                if playerGui and playerGui:FindFirstChild("Main") and playerGui.Main:FindFirstChild("Quest") then
+                    hasQuest = playerGui.Main.Quest.Visible
+                end
+
+                local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+                local commF = remotes and remotes:FindFirstChild("CommF_")
+
+                -- Se não tiver missão, pega automaticamente baseada no nível atual do player
+                if not hasQuest and commF then
+                    local lvl = LocalPlayer.Data.Level.Value
+                    if lvl >= 1 and lvl <= 9 then
+                        commF:InvokeServer("StartQuest", "BanditQuest1", 1)
+                    elseif lvl >= 10 and lvl <= 14 then
+                        commF:InvokeServer("StartQuest", "JungleQuest", 1)
+                    elseif lvl >= 15 and lvl <= 29 then
+                        commF:InvokeServer("StartQuest", "JungleQuest", 2)
+                    elseif lvl >= 30 and lvl <= 39 then
+                        commF:InvokeServer("StartQuest", "BuggyQuest1", 1)
+                    elseif lvl >= 40 and lvl <= 59 then
+                        commF:InvokeServer("StartQuest", "BuggyQuest1", 2)
+                    elseif lvl >= 60 and lvl <= 89 then
+                        commF:InvokeServer("StartQuest", "DesertQuest", 1)
+                    elseif lvl >= 90 and lvl <= 119 then
+                        commF:InvokeServer("StartQuest", "DesertQuest", 2)
+                    else
+                        commF:InvokeServer("StartQuest", "BanditQuest1", 1)
                     end
                 end
 
-                -- Varre os inimigos na pasta Enemies para achar o alvo mais próximo
+                -- Varre os inimigos na pasta Enemies
                 local targetMob = nil
                 local enemiesFolder = Workspace:FindFirstChild("Enemies")
                 if enemiesFolder then
@@ -167,11 +166,11 @@ task.spawn(function()
                     end
                 end
 
-                -- Se achou o mob, ativa o Fly Lento mantendo o player flutuando por cima (evita ficar enterrado)
+                -- Teleporte suave com Fly Lento integrado (mantém 7 studs acima para não afundar no chão)
                 if targetMob then
                     humanoid.PlatformStand = true
-                    local abovePosition = targetMob.CFrame * CFrame.new(0, 8, 2)
-                    root.CFrame = root.CFrame:Lerp(abovePosition, 0.3)
+                    local targetCFrame = targetMob.CFrame + Vector3.new(0, 7, 0)
+                    root.CFrame = root.CFrame:Lerp(targetCFrame, 0.3)
                     root.Velocity = Vector3.new(0, 0, 0)
                 else
                     humanoid.PlatformStand = false
@@ -187,7 +186,7 @@ task.spawn(function()
     end
 end)
 
--- ESP de Frutas
+-- ESP de Frutas (Vermelho, Nome e Distância)
 task.spawn(function()
     while true do
         task.wait(1)
@@ -234,7 +233,7 @@ end)
 -- Botões Click Events
 FarmBtn.MouseButton1Click:Connect(function()
     _Farm = not _Farm
-    FarmBtn.Text = "Auto Farm (Quest + Fly): " .. (_Farm and "ON" or "OFF")
+    FarmBtn.Text = "Auto Farm (Real Quest + Fly): " .. (_Farm and "ON" or "OFF")
     FarmBtn.TextColor3 = _Farm and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
