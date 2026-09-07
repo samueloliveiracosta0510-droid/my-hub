@@ -1,43 +1,38 @@
--- [[ BLOX FRUITS - ULTRA CUSTOM GUI (DELTA / EMULADOR) ]] --
+-- [[ BLOX FRUITS - ULTRA HUB v4 (COM AUTO FARM INTELIGENTE) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- Evitar multiplas execuções da GUI
-if LocalPlayer.PlayerGui:FindFirstChild("OptimizedBloxFruitsHub") then
-    LocalPlayer.PlayerGui.OptimizedBloxFruitsHub:Destroy()
+if LocalPlayer.PlayerGui:FindFirstChild("UltraBloxFruitsHub") then
+    LocalPlayer.PlayerGui.UltraBloxFruitsHub:Destroy()
 end
 
--- Criando a Interface Gráfica Moderna
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "OptimizedBloxFruitsHub"
+ScreenGui.Name = "UltraBloxFruitsHub"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 400, 0, 320)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 420, 0, 340)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = MainFrame
 
--- TopBar / Cabeçalho
 local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
 TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 38)
+TopBar.Size = UDim2.new(1, 0, 0, 45)
 
-local TopBarCorner = Instance.new("UICorner")
-TopBarCorner.CornerRadius = UDim.new(0, 10)
-TopBarCorner.Parent = TopBar
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
 
 local Title = Instance.new("TextLabel")
 Title.Parent = TopBar
@@ -45,131 +40,129 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(1, -15, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits - Hub Otimizado (Delta)"
+Title.Text = "⚡ Blox Fruits Hub - Auto Farm Pro"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 15
+Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Container dos Botões
-local Container = Instance.new("ScrollingFrame")
-Container.Parent = MainFrame
-Container.BackgroundTransparency = 1
-Container.Position = UDim2.new(0, 10, 0, 55)
-Container.Size = UDim2.new(1, -20, 1, -65)
-Container.CanvasSize = UDim2.new(0, 0, 0, 300)
-Container.ScrollBarThickness = 4
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Parent = MainFrame
+Scroll.BackgroundTransparency = 1
+Scroll.Position = UDim2.new(0, 12, 0, 60)
+Scroll.Size = UDim2.new(1, -24, 1, -70)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 320)
+Scroll.ScrollBarThickness = 5
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = Container
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 10)
+local UIList = Instance.new("UIListLayout")
+UIList.Parent = Scroll
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 10)
 
--- Função criadora de Botões Customizados
-local function createButton(name, defaultText)
-    local btn = Instance.new("TextButton")
-    btn.Name = name
-    btn.Parent = Container
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-    btn.Size = UDim2.new(1, 0, 0, 45)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.Text = defaultText .. ": OFF"
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 14
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = btn
-    
-    return btn
+local function makeBtn(txt)
+    local b = Instance.new("TextButton")
+    b.Parent = Scroll
+    b.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    b.Size = UDim2.new(1, 0, 0, 45)
+    b.Font = Enum.Font.GothamSemibold
+    b.Text = txt .. ": OFF"
+    b.TextColor3 = Color3.fromRGB(180, 180, 180)
+    b.TextSize = 14
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 8)
+    c.Parent = b
+    return b
 end
 
-local AutoFarmBtn = createButton("AutoFarm", "Auto Farm Level")
-local AutoAttackBtn = createButton("AutoAttack", "Auto Attack / Click")
-local SlowFlyBtn = createButton("SlowFly", "Fly Lento (Seguro)")
+local FarmBtn = makeBtn("Auto Farm Level (Pro)")
+local AttackBtn = makeBtn("Auto Attack (Click)")
+local FlyBtn = makeBtn("Fly Lento Seguro")
 
--- Variáveis de Estado das Funções
-local _G_AutoFarm = false
-local _G_AutoAttack = false
-local _G_SlowFly = false
+local _Farm = false
+local _Attack = false
+local _Fly = false
 
--- Variáveis do Fly Lento
-local flySpeed = 35 -- Velocidade segura para emulador/Delta
-local bv, bg
-local character, rootPart, humanoid
+-- Fly Variables
+local speed = 30
+local bv, bg, char, root, hum
 
-local function setupFly()
-    character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    rootPart = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
+local function startFly()
+    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    root = char:WaitForChild("HumanoidRootPart")
+    hum = char:WaitForChild("Humanoid")
     
     bv = Instance.new("BodyVelocity")
     bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    bv.Velocity = Vector3.new(0, 0, 0)
-    bv.Parent = rootPart
+    bv.Velocity = Vector3.new(0,0,0)
+    bv.Parent = root
     
     bg = Instance.new("BodyGyro")
     bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bg.CFrame = rootPart.CFrame
-    bg.Parent = rootPart
+    bg.CFrame = root.CFrame
+    bg.Parent = root
 end
 
-local function removeFly()
+local function stopFly()
     if bv then bv:Destroy() end
     if bg then bg:Destroy() end
+    if hum then hum.PlatformStand = false end
 end
 
--- Lógica do Auto Attack (Simula cliques rápidos na tela/mouse)
+-- Auto Attack Otimizado
 RunService.Stepped:Connect(function()
-    if _G_AutoAttack then
+    if _Attack then
         pcall(function()
-            local vim = game:GetService("VirtualInputManager")
-            vim:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-            task.wait(0.05)
-            vim:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+            task.wait(0.02)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
         end)
     end
 end)
 
--- Lógica do Fly Lento
+-- Fly Lento Estável
 RunService.RenderStepped:Connect(function()
-    if _G_SlowFly and rootPart and humanoid and bg and bv then
-        humanoid.PlatformStand = true
-        local camera = workspace.CurrentCamera
-        local moveDirection = Vector3.new(0, 0, 0)
+    if _Fly and root and hum and bg and bv then
+        hum.PlatformStand = true
+        local cam = workspace.CurrentCamera
+        local move = Vector3.new(0,0,0)
+        local uis = game:GetService("UserInputService")
         
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-            moveDirection = moveDirection + camera.CFrame.LookVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-            moveDirection = moveDirection - camera.CFrame.LookVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-            moveDirection = moveDirection - camera.CFrame.RightVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-            moveDirection = moveDirection + camera.CFrame.RightVector
-        end
+        if uis:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
         
-        bv.Velocity = moveDirection * flySpeed
-        bg.CFrame = camera.CFrame
-    elseif humanoid then
-        humanoid.PlatformStand = false
+        bv.Velocity = move * speed
+        bg.CFrame = cam.CFrame
     end
 end)
 
--- Lógica Básica do Auto Farm (Procura Missão / Inimigos próximos de forma segura)
+-- Auto Farm Avançado (Varredura contínua de Inimigos e trancamento de alvo)
 task.spawn(function()
     while true do
-        task.wait(0.5)
-        if _G_AutoFarm then
+        task.wait(0.2)
+        if _Farm then
             pcall(function()
-                -- Simulação de busca segura por mobs para evitar crash no Delta
-                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                    if _G_AutoFarm and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            -- Teletransporte suave até o mob de forma controlada
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 5, 3)
-                            break
+                local enemiesFolder = workspace:FindFirstChild("Enemies")
+                if enemiesFolder then
+                    for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                        local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+                        local hrp = enemy:FindFirstChild("HumanoidRootPart")
+                        
+                        if _Farm and humanoid and hrp and humanoid.Health > 0 then
+                            local myHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            if myHrp then
+                                -- Mantém o personagem flutuando logo acima/atrás do mob para evitar dano direto e garantir o hit
+                                myHrp.CFrame = hrp.CFrame * CFrame.new(0, 5, 4)
+                                
+                                -- Equipa a arma/melee ativa automaticamente se houver
+                                if LocalPlayer.Backpack:FindFirstChildOfClass("Tool") then
+                                    local tool = LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+                                    if tool and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                                        LocalPlayer.Character.Humanoid:EquipTool(tool)
+                                    end
+                                end
+                                break
+                            end
                         end
                     end
                 end
@@ -178,29 +171,22 @@ task.spawn(function()
     end
 end)
 
--- Eventos de Clique nos Botões da GUI
-AutoFarmBtn.MouseButton1Click:Connect(function()
-    _G_AutoFarm = not _G_AutoFarm
-    AutoFarmBtn.Text = "Auto Farm Level: " .. (_G_AutoFarm and "ON" or "OFF")
-    AutoFarmBtn.TextColor3 = _G_AutoFarm and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(200, 200, 200)
+-- Botões Click Events
+FarmBtn.MouseButton1Click:Connect(function()
+    _Farm = not _Farm
+    FarmBtn.Text = "Auto Farm Level (Pro): " .. (_Farm and "ON" or "OFF")
+    FarmBtn.TextColor3 = _Farm and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
-AutoAttackBtn.MouseButton1Click:Connect(function()
-    _G_AutoAttack = not _G_AutoAttack
-    AutoAttackBtn.Text = "Auto Attack / Click: " + (_G_AutoAttack and "ON" or "OFF") -- Corrigido para concatenar em Lua
-    AutoAttackBtn.Text = "Auto Attack / Click: " .. (_G_AutoAttack and "ON" or "OFF")
-    AutoAttackBtn.TextColor3 = _G_AutoAttack and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(200, 200, 200)
+AttackBtn.MouseButton1Click:Connect(function()
+    _Attack = not _Attack
+    AttackBtn.Text = "Auto Attack (Click): " .. (_Attack and "ON" or "OFF")
+    AttackBtn.TextColor3 = _Attack and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
-SlowFlyBtn.MouseButton1Click:Connect(function()
-    _G_SlowFly = not _G_SlowFly
-    SlowFlyBtn.Text = "Fly Lento (Seguro): " .. (_G_SlowFly and "ON" or "OFF")
-    SlowFlyBtn.TextColor3 = _G_SlowFly and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(200, 200, 200)
-    
-    if _G_SlowFly then
-        setupFly()
-    else
-        removeFly()
-        if humanoid then humanoid.PlatformStand = false end
-    end
+FlyBtn.MouseButton1Click:Connect(function()
+    _Fly = not _Fly
+    FlyBtn.Text = "Fly Lento Seguro: " .. (_Fly and "ON" or "OFF")
+    FlyBtn.TextColor3 = _Fly and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
+    if _Fly then startFly() else stopFly() end
 end)
