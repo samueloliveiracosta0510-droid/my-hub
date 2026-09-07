@@ -1,10 +1,9 @@
--- [[ BLOX FRUITS - ULTRA HUB v7 (AUTO FARM COM FLY LENTO + QUESTS) ]] --
+-- [[ BLOX FRUITS - ULTRA HUB v8 (AUTO FARM COM FLY LENTO INTEGRADO) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 if LocalPlayer.PlayerGui:FindFirstChild("UltraBloxFruitsHub") then
     LocalPlayer.PlayerGui.UltraBloxFruitsHub:Destroy()
@@ -42,7 +41,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(1, -15, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits - Auto Farm Pro (Com Fly)"
+Title.Text = "⚡ Blox Fruits - Auto Farm + Fly Lento"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -75,7 +74,7 @@ local function makeBtn(txt, isDestructive)
     return b
 end
 
-local FarmBtn = makeBtn("Auto Farm (Com Fly Integrado)")
+local FarmBtn = makeBtn("Auto Farm (Com Fly Lento)")
 local AttackBtn = makeBtn("Auto Attack (Click)")
 local EspBtn = makeBtn("ESP Frutas (Nome + Distância)")
 local ExitBtn = makeBtn("❌ Finalizar / Fechar Script", true)
@@ -93,7 +92,7 @@ local function clearEsp()
     espDrawings = {}
 end
 
--- Auto Attack contínuo via VirtualInputManager
+-- Auto Attack contínuo
 RunService.Stepped:Connect(function()
     if _Attack then
         pcall(function()
@@ -104,43 +103,19 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Sistema de Auto Farm Inteligente com Fly Lento Embutido e Coleta de Missão
+-- Auto Farm com Fly Lento Corrigido (Posicionamento exato acima do mob)
 task.spawn(function()
     while true do
-        task.wait(0.4)
+        task.wait(0.25)
         if _Farm then
             pcall(function()
-                local player = LocalPlayer
-                local char = player.Character
+                local char = LocalPlayer.Character
                 if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChildOfClass("Humanoid") then return end
                 local root = char.HumanoidRootPart
                 local humanoid = char:FindFirstChildOfClass("Humanoid")
                 
                 if humanoid.Health <= 0 then return end
 
-                -- 1. Verifica se já tem quest ativa no PlayerGui
-                local qGui = player.PlayerGui:FindFirstChild("Main")
-                local hasQuest = false
-                if qGui and qGui:FindFirstChild("Quest") then
-                    if qGui.Quest.Visible == true then
-                        hasQuest = true
-                    end
-                end
-
-                -- 2. Se não tiver quest, tenta interagir com os NPCs de missão do Sea 1 / Geral
-                if not hasQuest then
-                    for _, npc in pairs(Workspace.NPCs:GetChildren()) do
-                        if npc:FindFirstChild("HumanoidRootPart") and (npc.HumanoidRootPart.Position - root.Position).Magnitude < 15 then
-                            -- Simula toque/clique no NPC de quest
-                            local prompt = npc:FindFirstChildOfClass("ProximityPrompt")
-                            if prompt then
-                                fireproximityprompt(prompt)
-                            end
-                        end
-                    end
-                end
-
-                -- 3. Localiza o inimigo mais próximo no Workspace.Enemies
                 local targetMob = nil
                 local enemiesFolder = Workspace:FindFirstChild("Enemies")
                 if enemiesFolder then
@@ -158,12 +133,11 @@ task.spawn(function()
                     end
                 end
 
-                -- 4. Movimentação suave via Fly Lento em direção ao mob
                 if targetMob then
                     humanoid.PlatformStand = true
-                    -- Interpolação suave (fly lento) até o alvo mantendo 5 studs acima para bater sem levar dano direto
-                    local targetCFrame = targetMob.CFrame * CFrame.new(0, 6, 3)
-                    root.CFrame = root.CFrame:Lerp(targetCFrame, 0.25)
+                    -- Trava o personagem flutuando exatamente a 5 studs acima do monstro (sem colar dentro dele)
+                    local safePosition = targetMob.CFrame + Vector3.new(0, 5, 0)
+                    root.CFrame = root.CFrame:Lerp(safePosition, 0.3)
                     root.Velocity = Vector3.new(0, 0, 0)
                 else
                     humanoid.PlatformStand = false
@@ -226,7 +200,7 @@ end)
 -- Botões Click Events
 FarmBtn.MouseButton1Click:Connect(function()
     _Farm = not _Farm
-    FarmBtn.Text = "Auto Farm (Com Fly): " .. (_Farm and "ON" or "OFF")
+    FarmBtn.Text = "Auto Farm (Com Fly Lento): " .. (_Farm and "ON" or "OFF")
     FarmBtn.TextColor3 = _Farm and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
