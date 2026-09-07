@@ -1,8 +1,9 @@
--- [[ BLOX FRUITS - ULTRA HUB v4 (COM AUTO FARM INTELIGENTE) ]] --
+-- [[ BLOX FRUITS - ULTRA HUB v5 (FIXED AUTO FARM & FLY) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+local UserInputService = game:GetService("UserInputService")
 
 if LocalPlayer.PlayerGui:FindFirstChild("UltraBloxFruitsHub") then
     LocalPlayer.PlayerGui.UltraBloxFruitsHub:Destroy()
@@ -40,7 +41,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.Size = UDim2.new(1, -15, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits Hub - Auto Farm Pro"
+Title.Text = "⚡ Blox Fruits Hub - Fix Edition"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -73,7 +74,7 @@ local function makeBtn(txt)
     return b
 end
 
-local FarmBtn = makeBtn("Auto Farm Level (Pro)")
+local FarmBtn = makeBtn("Auto Farm Level")
 local AttackBtn = makeBtn("Auto Attack (Click)")
 local FlyBtn = makeBtn("Fly Lento Seguro")
 
@@ -81,22 +82,24 @@ local _Farm = false
 local _Attack = false
 local _Fly = false
 
--- Fly Variables
-local speed = 30
-local bv, bg, char, root, hum
+-- Fly Variables Corrigidas
+local speed = 35
+local bv, bg
 
 local function startFly()
-    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    root = char:WaitForChild("HumanoidRootPart")
-    hum = char:WaitForChild("Humanoid")
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local root = char.HumanoidRootPart
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = true end
     
     bv = Instance.new("BodyVelocity")
-    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    bv.Velocity = Vector3.new(0,0,0)
+    bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bv.Velocity = Vector3.new(0, 0, 0)
     bv.Parent = root
     
     bg = Instance.new("BodyGyro")
-    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
     bg.CFrame = root.CFrame
     bg.Parent = root
 end
@@ -104,10 +107,14 @@ end
 local function stopFly()
     if bv then bv:Destroy() end
     if bg then bg:Destroy() end
-    if hum then hum.PlatformStand = false end
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.PlatformStand = false end
+    end
 end
 
--- Auto Attack Otimizado
+-- Auto Attack
 RunService.Stepped:Connect(function()
     if _Attack then
         pcall(function()
@@ -118,53 +125,51 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Fly Lento Estável
+-- Fly Lento Atualizado para Emulador
 RunService.RenderStepped:Connect(function()
-    if _Fly and root and hum and bg and bv then
-        hum.PlatformStand = true
-        local cam = workspace.CurrentCamera
-        local move = Vector3.new(0,0,0)
-        local uis = game:GetService("UserInputService")
-        
-        if uis:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
-        if uis:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
-        if uis:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
-        if uis:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
-        
-        bv.Velocity = move * speed
-        bg.CFrame = cam.CFrame
+    if _Fly then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local root = char.HumanoidRootPart
+            if bv and bg then
+                local cam = workspace.CurrentCamera
+                local move = Vector3.new(0, 0, 0)
+                
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+                
+                bv.Velocity = move * speed
+                bg.CFrame = cam.CFrame
+            end
+        end
     end
 end)
 
--- Auto Farm Avançado (Varredura contínua de Inimigos e trancamento de alvo)
+-- Auto Farm Corrigido (Busca em todo o workspace caso a pasta mude de nome)
 task.spawn(function()
     while true do
-        task.wait(0.2)
+        task.wait(0.3)
         if _Farm then
             pcall(function()
+                local target = nil
+                -- Procura tanto na pasta padrão quanto geral no workspace
                 local enemiesFolder = workspace:FindFirstChild("Enemies")
                 if enemiesFolder then
-                    for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                        local humanoid = enemy:FindFirstChildOfClass("Humanoid")
-                        local hrp = enemy:FindFirstChild("HumanoidRootPart")
-                        
-                        if _Farm and humanoid and hrp and humanoid.Health > 0 then
-                            local myHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                            if myHrp then
-                                -- Mantém o personagem flutuando logo acima/atrás do mob para evitar dano direto e garantir o hit
-                                myHrp.CFrame = hrp.CFrame * CFrame.new(0, 5, 4)
-                                
-                                -- Equipa a arma/melee ativa automaticamente se houver
-                                if LocalPlayer.Backpack:FindFirstChildOfClass("Tool") then
-                                    local tool = LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-                                    if tool and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-                                        LocalPlayer.Character.Humanoid:EquipTool(tool)
-                                    end
-                                end
-                                break
-                            end
+                    for _, mob in pairs(enemiesFolder:GetChildren()) do
+                        local hum = mob:FindFirstChildOfClass("Humanoid")
+                        local hrp = mob:FindFirstChild("HumanoidRootPart")
+                        if hum and hrp and hum.Health > 0 then
+                            target = hrp
+                            break
                         end
                     end
+                end
+                
+                -- Se achou o mob e o player tiver vivo, teleporta em cima
+                if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = target.CFrame * CFrame.new(0, 3, 3)
                 end
             end)
         end
@@ -174,7 +179,7 @@ end)
 -- Botões Click Events
 FarmBtn.MouseButton1Click:Connect(function()
     _Farm = not _Farm
-    FarmBtn.Text = "Auto Farm Level (Pro): " .. (_Farm and "ON" or "OFF")
+    FarmBtn.Text = "Auto Farm Level: " .. (_Farm and "ON" or "OFF")
     FarmBtn.TextColor3 = _Farm and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
 end)
 
