@@ -1,4 +1,4 @@
--- [[ BLOX FRUITS - ESP FRUTAS PURAS ]] --
+-- [[ BLOX FRUITS - ESP + TELEPORT PARA FRUTA MAIS PRÓXIMA ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
@@ -16,8 +16,8 @@ ScreenGui.ResetOnSpawn = false
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
-MainFrame.Size = UDim2.new(0, 300, 0, 140)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -110)
+MainFrame.Size = UDim2.new(0, 300, 0, 190)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -40,7 +40,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 12, 0, 0)
 Title.Size = UDim2.new(1, -12, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "🍎 Blox Fruits - ESP Frutas"
+Title.Text = "🍎 Blox Fruits - ESP & TP Frutas"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -55,9 +55,23 @@ EspBtn.Text = "ESP Frutas: OFF"
 EspBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
 EspBtn.TextSize = 14
 
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = EspBtn
+local BtnCorner1 = Instance.new("UICorner")
+BtnCorner1.CornerRadius = UDim.new(0, 8)
+BtnCorner1.Parent = EspBtn
+
+local TpBtn = Instance.new("TextButton")
+TpBtn.Parent = MainFrame
+TpBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+TpBtn.Position = UDim2.new(0, 15, 0, 110)
+TpBtn.Size = UDim2.new(1, -30, 0, 40)
+TpBtn.Font = Enum.Font.GothamSemibold
+TpBtn.Text = "⚡ Teleportar para Fruta Mais Próxima"
+TpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TpBtn.TextSize = 14
+
+local BtnCorner2 = Instance.new("UICorner")
+BtnCorner2.CornerRadius = UDim.new(0, 8)
+BtnCorner2.Parent = TpBtn
 
 local _EspFruit = false
 local espDrawings = {}
@@ -69,6 +83,7 @@ local function clearEsp()
     espDrawings = {}
 end
 
+-- ESP Loop
 task.spawn(function()
     while true do
         task.wait(1)
@@ -117,4 +132,33 @@ EspBtn.MouseButton1Click:Connect(function()
     EspBtn.Text = "ESP Frutas: " .. (_EspFruit and "ON" or "OFF")
     EspBtn.TextColor3 = _EspFruit and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(180, 180, 180)
     if not _EspFruit then clearEsp() end
+end)
+
+-- Botão de Teleport para a Fruta Mais Próxima
+TpBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local char = LocalPlayer.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        local root = char.HumanoidRootPart
+        
+        local nearestFruit = nil
+        local shortestDist = math.huge
+        
+        for _, obj in pairs(Workspace:GetChildren()) do
+            if obj:IsA("Tool") or obj.Name:find("Fruit") then
+                local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildOfClass("Part")
+                if handle then
+                    local dist = (handle.Position - root.Position).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        nearestFruit = handle
+                    end
+                end
+            end
+        end
+        
+        if nearestFruit then
+            root.CFrame = nearestFruit.CFrame + Vector3.new(0, 3, 0)
+        end
+    end)
 end)
