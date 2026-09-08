@@ -1,4 +1,4 @@
--- [[ BLOX FRUITS - HUB COMPLETO (ESP FRUTAS + TP + FLY + REACH) ]] --
+-- [[ BLOX FRUITS - NEXOMIA / XENO HUB v12 (FIXED FLY & SMOOTH ATTACK) ]] --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -42,7 +42,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 12, 0, 0)
 Title.Size = UDim2.new(1, -12, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ Blox Fruits - Hub Pro (ESP + TP + Fly)"
+Title.Text = "⚡ Blox Fruits - Hub (Fixed & Clean)"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize, Title.TextXAlignment = 12, Enum.TextXAlignment.Left
 
@@ -84,7 +84,7 @@ TpFruitBtn.TextSize = 13
 Instance.new("UICorner", TpFruitBtn).CornerRadius = UDim.new(0, 8)
 
 local FlyBtn = makeBtn("Fly (Controle de Velocidade)")
-local ReachBtn = makeBtn("Auto Attack + Reach (Longe)")
+local ReachBtn = makeBtn("Auto Attack + Reach")
 
 -- Controles de Velocidade do Fly
 local SpeedFrame = Instance.new("Frame")
@@ -126,7 +126,7 @@ Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 6)
 
 local _EspFruit, _Fly, _Reach = false, false, false
 local flySpeed = 50
-local bv, bg
+local bv, bg, gyro
 local espDrawings = {}
 
 local function clearEsp()
@@ -179,13 +179,12 @@ task.spawn(function()
     end
 end)
 
--- TP para Fruta mais próxima
+-- TP Fruta
 TpFruitBtn.MouseButton1Click:Connect(function()
     pcall(function()
         local char = LocalPlayer.Character
         if not char or not char:FindFirstChild("HumanoidRootPart") then return end
         local root = char.HumanoidRootPart
-        
         local nearestFruit = nil
         local shortestDist = math.huge
         
@@ -208,76 +207,75 @@ TpFruitBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Fly Corrigido (Sem travar o boneco)
 local function startFly()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local root = char.HumanoidRootPart
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = true end
     
     bv = Instance.new("BodyVelocity")
     bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     bv.Velocity = Vector3.new(0, 0, 0)
     bv.Parent = root
     
-    bg = Instance.new("BodyGyro")
-    bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bg.CFrame = root.CFrame
-    bg.Parent = root
+    gyro = Instance.new("BodyGyro")
+    gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    gyro.CFrame = root.CFrame
+    gyro.Parent = root
 end
 
 local function stopFly()
     if bv then bv:Destroy() end
-    if bg then bg:Destroy() end
-    local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then hum.PlatformStand = false end
-    end
+    if gyro then gyro:Destroy() end
 end
 
 RunService.RenderStepped:Connect(function()
     if _Fly then
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
-            if bv and bg then
+            if bv and gyro then
                 local cam = Workspace.CurrentCamera
                 local move = Vector3.new(0, 0, 0)
                 if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
                 if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
                 if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
                 if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+                
                 bv.Velocity = move * flySpeed
-                bg.CFrame = cam.CFrame
+                gyro.CFrame = cam.CFrame
             end
         end
     end
 end)
 
-RunService.Stepped:Connect(function()
-    if _Reach then
-        pcall(function()
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-            task.wait(0.01)
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-            
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local root = char.HumanoidRootPart
-                local enemiesFolder = Workspace:FindFirstChild("Enemies")
-                if enemiesFolder then
-                    for _, mob in pairs(enemiesFolder:GetChildren()) do
-                        local mobHrp = mob:FindFirstChild("HumanoidRootPart")
-                        local mobHum = mob:FindFirstChildOfClass("Humanoid")
-                        if mobHrp and mobHum and mobHum.Health > 0 then
-                            if (mobHrp.Position - root.Position).Magnitude < 35 then
-                                mobHrp.CFrame = root.CFrame * CFrame.new(0, 0, -3)
+-- Auto Attack com Reach Otimizado (Com intervalo para não travar o jogo)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _Reach then
+            pcall(function()
+                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                task.wait(0.02)
+                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local root = char.HumanoidRootPart
+                    local enemiesFolder = Workspace:FindFirstChild("Enemies")
+                    if enemiesFolder then
+                        for _, mob in pairs(enemiesFolder:GetChildren()) do
+                            local mobHrp = mob:FindFirstChild("HumanoidRootPart")
+                            local mobHum = mob:FindFirstChildOfClass("Humanoid")
+                            if mobHrp and mobHum and mobHum.Health > 0 then
+                                if (mobHrp.Position - root.Position).Magnitude < 30 then
+                                    mobHrp.CFrame = root.CFrame * CFrame.new(0, 0, -3)
+                                end
                             end
                         end
                     end
                 end
-            end
-        end)
+            end)
+        end
     end
 end)
 
